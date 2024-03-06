@@ -162,10 +162,10 @@ def sample_and_concat_n_completions(
         if len(completion_fns) > 1:
             # use a separate model for each completion
             assert len(completion_fns) == n
-            completion_fn = completion_fns[i]
+            completion_fn = completion_fns[i]       # Yao: 使用n个completion_fn，每个生成1次，生成n个completion_i
         else:
             # use the single model for all completions
-            completion_fn = completion_fns[0]
+            completion_fn = completion_fns[0]       # Yao: 使用同1个completion_fn，连续生成n次，生成n个completion_i
         get_input_completion = PromptFn(prompt, completion_fn=completion_fn, **sample_kwargs)
         completion_i, _ = get_input_completion()
         completion_i_s.append(completion_i)

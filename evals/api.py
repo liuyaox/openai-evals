@@ -81,7 +81,7 @@ def record_and_check_match(
 
     picked = None
     for option in options:
-        if not sampled.startswith(option):
+        if not sampled.startswith(option):      # Yao: Basic Evals Template: 通过字符串start with来判断是非对错
             continue
         if (
             separator is not None
@@ -98,7 +98,7 @@ def record_and_check_match(
         "options": options,
         "picked": picked,
     }
-    match = picked in expected
+    match = picked in expected              # Yao: 判断的结果？
     result["expected"] = expected
     result["match"] = match
     record_match(match, expected=expected, picked=picked, sampled=sampled, options=options)

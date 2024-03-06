@@ -65,7 +65,7 @@ def open_by_file_pattern(filename: Union[str, Path], mode: str = "r", **kwargs: 
             scheme = urllib.parse.urlparse(filename).scheme
             if (not os.path.exists(filename)) and (scheme == "" or scheme == "file"):
                 return open_fn(
-                    os.path.join(
+                    os.path.join(                   # Yao: 写死了目录为evals/evals/registry/data（这是旧版，待确认！）
                         os.path.dirname(os.path.abspath(__file__)),
                         "registry",
                         "data",
@@ -74,7 +74,7 @@ def open_by_file_pattern(filename: Union[str, Path], mode: str = "r", **kwargs: 
                     mode=mode,
                 )
             else:
-                return open_fn(filename, mode=mode)
+                return open_fn(filename, mode=mode)     # Yao: 要么只能是gcs上的文件（这是旧版，待确认！）
     except Exception as e:
         raise RuntimeError(f"Failed to open: {filename}") from e
 

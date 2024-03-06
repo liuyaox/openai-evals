@@ -27,9 +27,9 @@ class ModelBasedClassify(evals.Eval):
     ):
         super().__init__(*args, **kwargs)
         # treat last completion_fn as eval_completion_fn
-        self.eval_completion_fn = self.completion_fns[-1]
+        self.eval_completion_fn = self.completion_fns[-1]   # Yao: oaieval <completion_fns>中的completion_fns，最后1个用于model-graded eval
         if len(self.completion_fns) > 1:
-            self.completion_fns = self.completion_fns[:-1]
+            self.completion_fns = self.completion_fns[:-1]  # Yao: 接上，前面所有(除了最后一个)用于test_samples中基于input生成output
         n_models = len(self.completion_fns)
         self.sample_kwargs = {"max_tokens": 1024}
         self.sample_kwargs.update(sample_kwargs or {})
@@ -61,14 +61,14 @@ class ModelBasedClassify(evals.Eval):
 
         # run policy completions
         completions = {}
-        for k, v in self.mg.input_outputs.items():
+        for k, v in self.mg.input_outputs.items():              # Yao: 基于input1生成completion1，基于input2生成completion2
             if v in test_sample:  # test_sample already has completion, skip.
                 continue
             if self.multicomp_n > 1:
-                completion = sample_and_concat_n_completions(
+                completion = sample_and_concat_n_completions(   # Yao: 要么n个completion_fn生成n个output，要么同1个completion_fn生成n个output
                     self.completion_fns,
                     prompt=test_sample[k],
-                    template_i=self.mg.output_template,
+                    template_i=self.mg.output_template,         # Yao: 基于output_template，将n个output共同组装成一个completion
                     sample_kwargs=self.sample_kwargs,
                     n=self.multicomp_n,
                 )

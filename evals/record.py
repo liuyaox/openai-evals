@@ -15,6 +15,8 @@ import time
 from contextvars import ContextVar
 from datetime import datetime, timezone
 from typing import Any, List, Optional, Sequence, Text
+import json
+import pandas as pd
 
 import blobfile as bf
 import requests
@@ -640,3 +642,47 @@ def pause():
 
 def unpause():
     return default_recorder().unpause()
+
+
+def parse_record(record_path):
+    """
+    Parse a record file into a detailed report in pd.DataFrame format.
+    :param record_path:
+    :return:
+    """
+    cli, final_report = None, None
+    sample_dict = {}
+    with open(record_path, 'r', encoding='utf8') as fr:
+        for line in fr:
+            line = json.loads(line.strip())
+            if 'spec' in line:
+                cli = line
+            elif 'final_report' in line:
+                final_report = line
+            else:
+                sample_dict[line['sample_id']] = sample_dict.get(line['sample_id'], []) + [line]
+
+    details = []
+    samples = sorted(sample_dict.items(), key=lambda x: int(x[0].split('.')[-1]))   # sort by sample_id
+    for sample_id, events in samples:
+        events = sorted(events, key=lambda x: int(x['event_id']))   # sort by event_id
+        if len(events) >= 3:    # 倒数第1是metric，倒数第2是eval相关，之前的都是completion
+            sample = {'sample_id': sample_id}
+            for i in range(0, len(events) - 2):
+                j = '' if len(events) == 3 else i + 1
+                sample.update({
+                    f'completion{j}_type': events[i]['type'],
+                    f'completion{j}_prompt': events[i]['data']['prompt'],
+                    f'completion{j}_output': events[i]['data']['sampled'][0]
+                })
+            sample.update({
+                'eval_type': events[-2]['type'],
+                'eval_prompt': events[-2]['data']['prompt'][0],
+                'eval_output': events[-2]['data']['sampled'][0],
+                'metric_type': events[-1]['type'],
+                'metric_data': events[-1]['data'],
+            })
+            details.append(sample)
+    details = pd.DataFrame(details)
+
+    return cli, final_report, details

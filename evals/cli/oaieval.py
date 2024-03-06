@@ -126,7 +126,7 @@ def run(args: OaiEvalArguments, registry: Optional[Registry] = None) -> str:
 
     registry = registry or Registry()
     if args.registry_path:
-        registry.add_registry_paths(args.registry_path)
+        registry.add_registry_paths(args.registry_path)         # Yao: 添加（不是替换）用户指定的注册目录
 
     eval_spec = registry.get_eval(args.eval)
     assert (
@@ -191,7 +191,7 @@ def run(args: OaiEvalArguments, registry: Optional[Registry] = None) -> str:
     )
 
     record_path = (
-        f"/tmp/evallogs/{run_spec.run_id}_{args.completion_fn}_{args.eval}.jsonl"
+        f"/tmp/evallogs/{run_spec.run_id}_{args.completion_fn}_{args.eval}.jsonl"   # Yao：日志文件
         if args.record_path is None
         else args.record_path
     )
@@ -211,8 +211,8 @@ def run(args: OaiEvalArguments, registry: Optional[Registry] = None) -> str:
     logger.info(_purple(f"Run started: {run_url}"))
 
     eval_class = registry.get_class(eval_spec)
-    eval: Eval = eval_class(
-        completion_fns=completion_fn_instances,
+    eval: Eval = eval_class(                            # Yao：初始化Eval Class
+        completion_fns=completion_fn_instances,         # Yao：CLI中的<completion_fns>传参给eval class，用于生成output和做model-graded eval
         seed=args.seed,
         name=eval_name,
         eval_registry_path=eval_spec.registry_path,

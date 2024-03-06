@@ -27,7 +27,7 @@ client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_PATHS = [
+DEFAULT_PATHS = [           # Yao：默认2个注册目录
     Path(__file__).parents[0].resolve() / "registry",
     Path.home() / ".evals",
 ]
@@ -300,6 +300,7 @@ class Registry:
 
         return registry
 
+    # Yao: 如下，目前completion_fns, evals, eval_sets, modelgraded支持域外注册，而test_sample不支持域外注册
     @functools.cached_property
     def _completion_fns(self) -> RawRegistry:
         return self._load_registry(self._registry_paths, "completion_fns")
